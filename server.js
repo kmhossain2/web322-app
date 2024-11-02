@@ -7,7 +7,7 @@ Name: Kazi Meherab hossain
 Student ID: 118640234 
 Date: 01 Nov 2024
 Cyclic Web App URL: https://web322-app-cdfn.onrender.com/about
-GitHub Repository URL: https://github.com/Zi64/Web322App
+GitHub Repository URL: https://github.com/Zi64/web322-app.git
 
 ********************************************************************************/
 
