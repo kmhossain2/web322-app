@@ -1,22 +1,28 @@
-const fs = require('fs');
-const path = require('path');
-
-let itemsArray = [];
-let categoriesArray = [];
+// Export the module
 module.exports = {
     initialize,
     getAllItems,
-    getPublishedItems,
-    getCategories,
     getItemsByCategory,
     getItemsByMinDate,
     getItemsById,
+    getPublishedItems,
+    getPublishedItemsByCategory,
+    getCategories,
     addItem
-};
+}
 
+// Import modules
+const fs = require('fs');
+const path = require('path');
 
+// Declaring Global Array Variables
+let itemsArray = [];
+let categoriesArray = [];
+
+// Exported Functions
 function initialize() {
     return new Promise((resolve, reject) => {
+        // Read items.json
         fs.readFile('./data/items.json', 'utf8', (err, fileData) => {
             if (err) {
                 reject("Failed to initialize items");
@@ -29,6 +35,7 @@ function initialize() {
                 reject('initialize process rejected: ' + parseError);
                 return;
             }
+            // Read categories.json once the items.json was initialized successfully
             fs.readFile('./data/categories.json', 'utf8', (err, fileData) => {
                 if (err) {
                     reject("Failed to initialize categories");
@@ -90,7 +97,7 @@ function getItemsById(id) {
     return new Promise((resolve, reject) => {
         const idItems = itemsArray.filter((item) => item.id == id);
         if (idItems.length > 0) {
-            resolve(idItems);
+            resolve(idItems[0]);
         }
         else {
             reject('No results returned');
@@ -110,6 +117,18 @@ function getPublishedItems() {
     })
 }
 
+function getPublishedItemsByCategory(category) {
+    return new Promise((resolve, reject) => {
+        if (itemsArray.length > 0) {
+            let publishedItems = itemsArray.filter((element) => element.published == true && element.category == category);
+            resolve(publishedItems);
+        }
+        else {
+            reject('No results returned');
+        }
+    });
+}
+
 function getCategories() {
     return new Promise((resolve, reject) => {
         if (categoriesArray.length > 0) {
@@ -125,6 +144,10 @@ function addItem(itemData) {
     return new Promise((resolve, reject) => {
         try {
             itemData.published = itemData.published !== undefined;
+
+            const currentDate = new Date();
+            itemData.postDate = currentDate.toISOString().split('T')[0];
+
             itemData.id = itemsArray.length + 1;
             itemsArray.push(itemData);
             resolve(itemData);
