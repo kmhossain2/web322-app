@@ -19,11 +19,12 @@
         <div class="container" style="padding-top: 90px;">
             <div class="row">
                 <div class="col-md-12">
-                    <% if (message) { %>
-                        <strong> message </strong>
-                    <% } else { %>
                     <h2>Items</h2>
+                    <a href="/items/add" class="btn btn-success pull-right">Add Post</a>
                     <hr />
+                    <% if (message) { %>
+                        <strong> <%= message %> </strong>
+                    <% } else { %>
                     <table class="table">
                         <thead>
                             <tr>
@@ -33,6 +34,7 @@
                                 <th>Price</th>
                                 <th>Category</th>
                                 <th>Published</th>
+                                <th></th> <!-- New empty column for remove button -->
                             </tr>
                         </thead>
                         <tbody>
@@ -44,6 +46,9 @@
                                     <td><%= item.price %></td>
                                     <td><%= item.category %></td>
                                     <td><%= item.published ? 'Yes' : 'No' %></td>
+                                    <td>
+                                        <a href="/post/delete/<%= item.id %>" class="btn btn-danger">Remove</a>
+                                    </td>
                                 </tr>
                             <% }); %>
                         </tbody>

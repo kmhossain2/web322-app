@@ -19,16 +19,23 @@
         <div class="container" style="padding-top: 90px;">
             <div class="row">
                 <div class="col-md-12">
-                    <% if (message) { %>
-                        <strong> message </strong>
-                    <% } else { %>
                     <h2>Categories</h2>
+
+                    <!-- Add Category Button -->
+                    <a href="/categories/add" class="btn btn-success pull-right">Add Category</a>
+
                     <hr />
+                    <% if (message) { %>
+                        <strong> <%= message %> </strong>
+                    <% } else { %>
+                    <hr />
+
                     <table class="table">
                         <thead>
                             <tr>
                                 <th>Category ID</th>
                                 <th>Category Name</th>
+                                <th></th> <!-- Empty header for remove button -->
                             </tr>
                         </thead>
                         <tbody>
@@ -39,6 +46,9 @@
                                     </td>
                                     <td>
                                         <a href="/items?category=<%= category.id %>"> <%= category.category %> </a>
+                                    </td>
+                                    <td>
+                                        <a href="/categories/delete/<%= category.id %>" class="btn btn-danger">Remove</a>
                                     </td>
                                 </tr>
                             <% }); %>
