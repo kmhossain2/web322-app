@@ -1,12 +1,12 @@
 /*********************************************************************************
 
-WEB322 – Assignment 04
+WEB322 – Assignment 05
 I declare that this assignment is my own work in accordance with Seneca  Academic Policy.  No part *  of this assignment has been copied manually or electronically from any other source (including 3rd party web sites) or distributed to other students.
 
 Name: Kazi Meherab hossain 
 Student ID: 118640234 
-Date: 23 Nov 2024
-Cyclic Web App URL: https://web322-app-1lw8.onrender.com
+Date: 06 Dec 2024
+Cyclic Web App URL: https://auspicious-young-sodium.glitch.me
 GitHub Repository URL: https://github.com/Zi64/web322-app.git
 
 ********************************************************************************/
@@ -50,10 +50,12 @@ app.use((req, res, next) => {
     next();
 });
 
+app.use(express.urlencoded({ extended: true }));
+
 /* ROUTES */
 
-// Redirect '/' to '/shop'
-app.get('/', (req, res) => res.redirect('/shop'));
+// Redirect '/' to '/about'
+app.get('/', (req, res) => res.redirect('/about'));
 
 // About Page
 app.get('/about', (req, res) => {
@@ -114,67 +116,227 @@ app.get('/shop/:id', async (req, res) => {
 });
 
 // Items Page
-app.get('/items', async (req, res) => {
-    try {
-        const items = req.query.category
-            ? await storeService.getItemsByCategory(req.query.category)
-            : req.query.minDate
-            ? await storeService.getItemsByMinDate(req.query.minDate)
-            : await storeService.getAllItems();
-
-        res.render('items', { items, activeRoute: app.locals.activeRoute, message: "" });
-    } catch {
-        res.render('items', { message: "Item not found" });
-    }
-});
-
-// Add Item Page
-app.get('/items/add', (req, res) => res.sendFile(path.join(__dirname, "/views/addItem.html")));
-
-// Item by ID
-app.get('/items/:id', async (req, res) => {
-    try {
-        const items = await storeService.getItemsById(req.params.id);
-        res.render('items', { items, activeRoute: app.locals.activeRoute, message: "" });
-    } catch {
-        res.render('items', { message: "Item not found" });
-    }
-});
-
-// Categories Page
-app.get('/categories', async (req, res) => {
-    try {
-        const categories = await storeService.getCategories();
-        res.render('categories', { categories, activeRoute: app.locals.activeRoute, message: "" });
-    } catch {
-        res.render('categories', { message: "Category not found" });
-    }
-});
-
-// Add Item Form Submission
-app.post('/items/add', upload.single("featureImage"), async (req, res) => {
-    try {
-        if (req.file) {
-            const uploaded = await new Promise((resolve, reject) => {
-                const stream = cloudinary.uploader.upload_stream((error, result) => {
-                    error ? reject(error) : resolve(result);
+app.get('/items', (req, res) => {
+    if (req.query.category) {
+      storeService.getItemsByCategory(req.query.category)
+            .then((data) => {
+                if (data.length > 0) {
+                    res.render('items', { 
+                        items: data,
+                        activeRoute: app.locals.activeRoute,
+                        message: ""
+                    });
+                }
+                else {
+                    res.render('items', { message: "no results found" });
+                }
+            })
+            .catch((reason) => {
+                console.log(reason);
+                res.render('items', { 
+                    message: "Item not found"
                 });
+            })
+    }
+    else if (req.query.minDate) {
+        storeService.getItemsByMinDate(req.query.minDate)
+            .then((data) => {
+                if (data.length > 0) {
+                    res.render('items', { 
+                        items: data,
+                        activeRoute: app.locals.activeRoute,
+                        message: ""
+                    });
+                }
+                else {
+                    res.render('items', { message: "no results found" });
+                }
+            })
+            .catch((reason) => {
+                console.log(reason);
+                res.render('items', { 
+                    message: "Item not found"
+                });
+            })
+    }
+    else {
+        storeService.getAllItems()
+            .then((data) => {
+                if (data.length > 0) {
+                    res.render('items', { 
+                        items: data,
+                        activeRoute: app.locals.activeRoute,
+                        message: ""
+                    });
+                }
+                else {
+                    res.render('items', { message: "no results found" });
+                }
+            })
+            .catch((reason) => {
+                console.log(reason);
+                res.render('items', { 
+                    message: "Item not found"
+                });
+            })
+    }
+});
+
+
+app.get('/items/add', (req, res) => {
+    storeService.getCategories()
+        .then((data) => {
+            res.render('addItem', {
+                categories: data,
+                activeRoute: app.locals.activeRoute
+            });
+        })
+        .catch((err) => {
+            res.render('addItem', {
+                categories: [],
+                activeRoute: app.locals.activeRoute
+            });
+        });
+});
+
+app.get('/items/delete/:id', (req, res) => {
+    storeService.deleteItemByID(req.params.id)
+        .then((data) => {
+            res.redirect('/items');
+        })
+        .catch((reason) => {
+            res.status(500).send(reason);
+        })
+});
+
+app.get('/items/:id', (req, res) => {
+    storeService.getItemsById(req.params.id)
+        .then((data) => {
+            if (data.length > 0){
+                res.render('items', { 
+                    items: data,
+                    activeRoute: app.locals.activeRoute,
+                    message: ""
+                });
+            }
+            else {
+                res.render('items', { message: "no results found" });
+            }
+        })
+        .catch((reason) => {
+            console.log(reason);
+            res.render('items', { 
+                message: "Item not found"
+            });
+        })
+})
+
+app.get('/categories/add', (req, res) => {
+    res.render('addCategory', {
+        activeRoute: app.locals.activeRoute
+    })
+})
+
+app.post('/categories/add', (req, res) => {
+    storeService.addCategory(req.body)
+        .then((data) => {
+            res.redirect('/categories');
+        })
+        .catch((reason) => {
+            res.status(500).send("Unable to read the item");
+        });
+});
+
+app.get('/categories', (req, res) => {
+    storeService.getCategories()
+            .then((data) => {
+                if (data.length > 0) {
+                    res.render('categories', { 
+                        categories: data,
+                        activeRoute: app.locals.activeRoute,
+                        message: ""
+                    });
+                }
+                else {
+                    res.render('categories', { message: "no results found" });
+                }
+            })
+            .catch((reason) => {
+                console.log(reason);
+                res.render('categories', { 
+                    message: "Category not found"
+                });
+            })
+});
+
+app.get('/categories/delete/:id', (req, res) => {
+    storeService.deleteCategoryByID(req.params.id)
+        .then((data) => {
+            res.redirect('/categories');
+        })
+        .catch((reason) => {
+                res.status(500).send(reason);
+        })
+});
+
+app.post('/items/add', upload.single("featureImage"), (req, res) => {
+    if(req.file){
+        let streamUpload = (req) => {
+            return new Promise((resolve, reject) => {
+                let stream = cloudinary.uploader.upload_stream(
+                    (error, result) => {
+                        if (result) {
+                            resolve(result);
+                        } else {
+                            reject(error);
+                        }
+                    }
+                );
+
                 streamifier.createReadStream(req.file.buffer).pipe(stream);
             });
-            req.body.featureImage = uploaded.url;
+        };
+
+        async function upload(req) {
+            let result = await streamUpload(req);
+            console.log(result);
+            return result;
         }
 
-        await storeService.addItem(req.body);
-        res.redirect('/items');
-    } catch {
-        res.status(500).send("Unable to process the item");
+        upload(req).then((uploaded)=>{
+            processItem(uploaded.url);
+        });
+    }
+    else {
+        processItem("");
+    }
+    
+    function processItem(imageUrl){
+        req.body.featureImage = imageUrl;
+
+        // TODO: Process the req.body and add it as a new Item before redirecting to /items
+        storeService.addItem(req.body)
+            .then((data) => {
+                res.redirect('/items');
+            })
+            .catch((reason) => {
+                res.status(500).send("Unable to read the item");
+            });
     }
 });
 
-// 404 Handler
-app.use((req, res) => res.status(404).send('404: Page Not Found'));
+app.use((req, res) => {
+    res.status(404).send('404: Page Not Found');
+});
 
-// Initialize Service and Start Server
 storeService.initialize()
-    .then(() => app.listen(HTTP_PORT, () => console.log(`Server listening on port ${HTTP_PORT}`)))
-    .catch(console.error);
+    .then((data) => {
+        console.log(data);
+        app.listen(HTTP_PORT, ()=> {
+            console.log(`Express http server listening on ${HTTP_PORT}`);
+        });
+    })
+    .catch((reason) => {
+        console.log(reason);
+    });
+// Listen on this port
